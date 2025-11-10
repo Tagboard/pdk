@@ -1,0 +1,24 @@
+{
+  "name": "pdk-example-nodejs",
+  "version": "1.0.0",
+  "description": "Example web server for integrating with Tagboard via the Partner Development Kit.",
+  "main": "server.ts",
+  "scripts": {
+    "start": "node --experimental-strip-types server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Example",
+    "Sample"
+  ],
+  "author": "Justin Brumley <justinbrumley@tagboard.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/bodyparser": "^6.0.0",
+    "@koa/cors": "^5.0.0",
+    "@koa/router": "^14.0.0",
+    "@types/koa": "^3.0.1",
+    "koa": "^3.1.1",
+    "typescript": "^5.9.3"
+  }
+}
