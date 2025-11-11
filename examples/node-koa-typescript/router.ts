@@ -2,6 +2,15 @@ import Koa from 'koa';
 import Router from '@koa/router';
 
 import { validateJwt, validateToken } from './middleware.ts';
+import { getJwt } from './auth.ts';
+
+import {
+  createUser,
+  getUser,
+  createExperience,
+  getExperiences,
+  getExperience,
+} from './db.ts';
 
 const router = new Router();
 
@@ -15,13 +24,61 @@ router.get('/ping', (ctx: Koa.Context) => {
 /****************************/
 
 // Create new account and return JWT.
-router.post('/signup', (ctx: Koa.Context) => {
-  ctx.status = 501;
+router.post('/register', (ctx: Koa.Context) => {
+  const {
+    username = '',
+    password = '',
+  } = ctx.request.body;
+
+  if (!username || !password) {
+    ctx.status = 400;
+    ctx.body = 'Must provide both username and password to register.';
+    return;
+  }
+
+  let user;
+  try {
+    user = createUser(username, password);
+  } catch (err) {
+    ctx.status = 400;
+    ctx.body = err?.message || 'Failed to register user.';
+    return;
+  }
+
+  if (!user) {
+    ctx.status = 400;
+    ctx.body = 'Failed to register user.';
+    return;
+  }
+
+  ctx.body = {
+    jwt: getJwt(user),
+  };
 });
 
 // Validate credentials and return JWT.
 router.post('/login', (ctx: Koa.Context) => {
-  ctx.status = 501;
+  const {
+    username = '',
+    password = '',
+  } = ctx.request.body;
+
+  if (!username || !password) {
+    ctx.status = 400;
+    ctx.body = 'Must provide both username and password to login.'
+    return;
+  }
+
+  const user = getUser(username, password);
+  if (!user) {
+    ctx.status = 400;
+    ctx.body = 'No user matching credentials found.'
+    return;
+  }
+
+  ctx.body = {
+    jwt: getJwt(user),
+  };
 });
 
 /*************************************/
@@ -35,17 +92,32 @@ router.post('/oauth', validateJwt, (ctx: Koa.Context) => {
 
 // Create a new Experience.
 router.post('/experiences', validateJwt, (ctx: Koa.Context) => {
-  ctx.status = 501;
+  const experience: Experience = ctx.request.body;
+  const user: User = ctx.state.user;
+
+  const id = createExperience(user.id, experience);
+
+  ctx.body = { id };
+  ctx.status = 201;
 });
 
 // Get list of Experiences
 router.get('/experiences', validateJwt, (ctx: Koa.Context) => {
-  ctx.status = 501;
+  const user: User = ctx.state.user;
+
+  const experiences = getExperiences(user.id)
+
+  ctx.body = { experiences };
 });
 
 // Get Experience by ID
 router.get('/experiences/:id', validateJwt, (ctx: Koa.Context) => {
-  ctx.status = 501;
+  const user: User = ctx.state.user;
+  const id: string = ctx.params.id;
+
+  const experience = getExperience(user.id, id);
+
+  ctx.body = experience;
 });
 
 // Update an Experience by ID.

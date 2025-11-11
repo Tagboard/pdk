@@ -7,6 +7,8 @@
  * https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
  */
 interface Trigger {
+  id: string;
+
   // Key is the string that we post to the IFrame via postMessage.
   key: string
 
@@ -19,6 +21,8 @@ interface Trigger {
  * will be able to choose from when setting up the Experience.
  */
 interface FieldOption {
+  id: string;
+
   // Value is the actual data for the option. This is what will be sent to the Experience
   // via the TemplateUrl.
   value: string
@@ -32,11 +36,16 @@ interface FieldOption {
  * Fields are the available overrides for any given Experience.
  */
 interface Field {
+  id: string;
+
   // Key is a unique identifier for the Field.
   // It is used to find where the data should go in the Experience's TemplateUrl.
   // For example Key:player_id would replace all instances of "{{player_id}}" in
   // Experience.TemplateUrl.
   key: string
+
+  // Label is used to describe the input within the UI of Tagboard.
+  label: string;
 
   // DefaultValue controls what the initial value should be set to
   // when the Tagboard user starts configuring the Experience.
@@ -80,4 +89,14 @@ interface Experience {
   // to configure on the Experience. This could be something like
   // which "player" is shown, or what "match" is used for reference.
   fields: Field[]
+}
+
+/**********************/
+/* Non-PDK Interfaces */
+/**********************/
+
+interface User {
+  id: string
+  username: string
+  password: string
 }
