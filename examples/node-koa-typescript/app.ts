@@ -2,6 +2,7 @@ import Koa from 'koa';
 import Router from '@koa/router';
 import { bodyParser } from '@koa/bodyparser';
 import cors from '@koa/cors';
+import serve from 'koa-static';
 
 import router from './router.ts';
 
@@ -13,6 +14,8 @@ app.use(bodyParser({
 }));
 
 app.use(cors());
+
+app.use(serve('static'));
 
 // Setup API endpoints w/allowed methods (determined automatically).
 app

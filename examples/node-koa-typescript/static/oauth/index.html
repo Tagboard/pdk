@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Connect to Debug Service</title>
+  </head>
+
+  <body>
+    <!-- Login Form-->
+    <div id="loginForm" style="display: none;">
+      <h1>
+        Debug Service Login
+      </h1>
+
+      <input type="text" placeholder="Username" name="username" />
+      <input type="password" placeholder="Password" name="password" />
+      <button id="loginButton">Login</button>
+
+      <p>
+        No account in the debug service? <a href="#" id="registerLink">Register for one.</a>
+      </p>
+    </div>
+
+    <!-- Register Form-->
+    <div id="registerForm" style="display: none;">
+      <h1>
+        Debug Service Registration
+      </h1>
+
+      <input type="text" placeholder="Username" name="username" />
+      <input type="password" placeholder="Password" name="password" />
+      <button id="registerButton">Register</button>
+
+      <p>
+        Already have an account? <a href="#" id="loginLink">Login with existing credentials</a>
+      </p>
+    </div>
+
+    <div id="oauthForm" style="display: none;">
+      <h1>
+        Debug Service OAuth
+      </h1>
+
+      <p>
+        Do you want to give access to the Debug Service to the consumer?
+      </p>
+
+      <button class="oauth-connect-button">
+        Yes
+      </button>
+
+      <button class="oauth-connect-button">
+        Yes, but reluctantly
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div style="color: red;" id="errorMessage"></div>
+
+    <script src="/oauth/oauth.js"></script>
+  </body>
+</html>

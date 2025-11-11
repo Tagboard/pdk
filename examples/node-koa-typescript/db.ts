@@ -202,10 +202,10 @@ export const createToken = (userId: string, clientId: string): Array<string> => 
 export const getUser = (username: string, password: string): User => {
   const user = findUserByUsernameAndPassword.get(username, hashPassword(password));
 
-  return {
+  return user ? {
     id: user.id,
     username: user.username,
-  } as User;
+  } as User : null;
 };
 
 export const getUserByAccessToken = (token: string): User => {
