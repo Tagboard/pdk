@@ -19,6 +19,16 @@ db.exec(`
 `);
 
 db.exec(`
+  CREATE TABLE IF NOT EXISTS tokens(
+    accessToken TEXT PRIMARY KEY,
+    refreshToken TEXT,
+    clientId TEXT,
+    userId TEXT,
+    FOREIGN KEY(userId) REFERENCES users(id)
+  )
+`);
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS experiences(
     id TEXT PRIMARY KEY,
     userId TEXT,
@@ -86,9 +96,22 @@ const findUserByUsernameAndPassword = db.prepare(`
     AND password = ?
 `);
 
+const findUserByAccessToken = db.prepare(`
+  SELECT user.*
+  FROM users user
+  JOIN tokens token
+    ON user.id = token.userId
+  WHERE token.accessToken = ?
+`);
+
 const insertUser = db.prepare(`
   INSERT INTO users (id, username, password)
   VALUES (?, ?, ?)
+`);
+
+const insertToken = db.prepare(`
+  INSERT INTO tokens (accessToken, refreshToken, clientId, userId)
+  VALUES (?, ?, ?, ?)
 `);
 
 const insertExperience = db.prepare(`
@@ -169,10 +192,29 @@ export const createUser = (username: string, password: string): User => {
   return user;
 };
 
+export const createToken = (userId: string, clientId: string): Array<string> => {
+  const accessToken = crypto.randomUUID();
+  const refreshToken = crypto.randomUUID();
+  insertToken.run(accessToken, refreshToken, clientId, userId);
+  return [accessToken, refreshToken];
+};
+
 export const getUser = (username: string, password: string): User => {
   const user = findUserByUsernameAndPassword.get(username, hashPassword(password));
-  console.log('User:', user);
-  return null;
+
+  return {
+    id: user.id,
+    username: user.username,
+  } as User;
+};
+
+export const getUserByAccessToken = (token: string): User => {
+  const user = findUserByAccessToken.get(token);
+
+  return {
+    id: user.id,
+    username: user.username,
+  } as User;
 };
 
 export const createExperience = (userId: string, experience: Experience): string => {

@@ -2,10 +2,11 @@ import Koa from 'koa';
 import Router from '@koa/router';
 
 import { validateJwt, validateToken } from './middleware.ts';
-import { getJwt } from './auth.ts';
+import { isValidClient, getJwt } from './auth.ts';
 
 import {
   createUser,
+  createToken,
   getUser,
   createExperience,
   getExperiences,
@@ -85,9 +86,25 @@ router.post('/login', (ctx: Koa.Context) => {
 /* Internal Endpoints (JWT Required) */
 /*************************************/
 
-// Generate new tokens for provided app.
+// Skipping a few steps to make this proper oauth, but serves the purpose of getting
+// some tokens for testing.
 router.post('/oauth', validateJwt, (ctx: Koa.Context) => {
-  ctx.status = 501;
+  const { clientId, clientSecret } = ctx.request.body;
+
+  const user: User = ctx.state.user;
+
+  if (!isValidClient(clientId, clientSecret)) {
+    ctx.status = 403;
+    return;
+  }
+
+  // Return the tokens straight away instead of using an authorization code + redirect flow.
+  const [accessToken, refreshToken] = createToken(user.id, clientId);
+
+  ctx.body = {
+    accessToken: btoa(accessToken),
+    refreshToken: btoa(refreshToken),
+  }
 });
 
 // Create a new Experience.
@@ -136,16 +153,25 @@ router.delete('/experiences/:id', validateJwt, (ctx: Koa.Context) => {
 
 // Get list of Experiences by account via access token.
 // This endpoint will be used by Tagboard via the provided URL:
-//   https://<<domain>>/pdk
-router.get('/pdk/experiences', validateToken, (ctx: Koa.Context) => {
-  ctx.status = 501;
+//   https://<<domain>>/api
+router.get('/api/experiences', validateToken, (ctx: Koa.Context) => {
+  const user: User = ctx.state.user;
+
+  const experiences = getExperiences(user.id)
+
+  ctx.body = { experiences };
 });
 
 // Get Experience by ID via access token.
 // This endpoint will be used by Tagboard via the provided URL:
-//   https://<<domain>>/pdk
-router.get('/pdk/experiences/:id', validateToken, (ctx: Koa.Context) => {
-  ctx.status = 501;
+//   https://<<domain>>/api
+router.get('/api/experiences/:id', validateToken, (ctx: Koa.Context) => {
+  const user: User = ctx.state.user;
+  const id: string = ctx.params.id;
+
+  const experience = getExperience(user.id, id);
+
+  ctx.body = experience;
 });
 
 export default router;
