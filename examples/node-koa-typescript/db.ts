@@ -221,15 +221,15 @@ export const createExperience = (userId: string, experience: Experience): string
   const experienceId = generateId();
   insertExperience.run(experienceId, userId, experience.name, experience.description, experience.url);
 
-  experience.triggers.forEach((trigger) => {
+  experience.triggers?.forEach((trigger) => {
     insertExperienceTrigger.run(generateId(), experienceId, trigger.key, trigger.label);
   });
 
-  experience.fields.forEach((field) => {
+  experience.fields?.forEach((field) => {
     const fieldId = generateId();
     insertExperienceField.run(fieldId, experienceId, field.key, field.label, field.defaultValue, field.isText);
 
-    field.options.forEach((option) => {
+    field.options?.forEach((option) => {
       insertExperienceFieldOption.run(generateId(), experienceId, fieldId, option.value, option.label);
     });
   });
