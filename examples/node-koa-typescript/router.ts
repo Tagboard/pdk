@@ -171,6 +171,11 @@ router.get('/api/experiences/:id', validateToken, (ctx: Koa.Context) => {
 
   const experience = getExperience(user.id, id);
 
+  if (!experience) {
+    ctx.status = 404;
+    return
+  }
+
   ctx.body = experience;
 });
 
