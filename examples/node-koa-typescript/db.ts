@@ -211,6 +211,10 @@ export const getUser = (username: string, password: string): User => {
 export const getUserByAccessToken = (token: string): User => {
   const user = findUserByAccessToken.get(token);
 
+  if (!user) {
+    return null;
+  }
+
   return {
     id: user.id,
     username: user.username,
