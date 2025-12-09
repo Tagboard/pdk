@@ -15,6 +15,24 @@ Object.entries(query).forEach(([key, value]) => {
     return;
   }
 
+  if (key === 'theme') {
+    switch (value) {
+      case 'dark': {
+        document.body.style.background = '#000000';
+        document.body.style.color = '#ffffff';
+        break;
+      }
+
+      case 'light': {
+        document.body.style.background = '#ffffff';
+        document.body.style.color = '#000000';
+        break;
+      }
+
+      default: break; // Salmon, the obvious choice for default
+    }
+  }
+
   const el = document.createElement('h4');
   el.textContent = `${key}: ${value}`;
   fieldsEl.appendChild(el);
