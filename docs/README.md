@@ -8,6 +8,20 @@ These Experiences are rendered within an IFrame element, so the target Experienc
 
 Partners will need to support OAuth in order for Tagboard to retrieve necessary access/refresh tokens on behalf of the user. These tokens will be used to fetch a list of Experiences, or additional details about an Experience by ID.
 
+To support OAuth with Tagboard, we'll need the following information about the Partner's API:
+
+- Base URL - This is the host of the API, and where Tagboard should authenticate _and_ fetch Experiences.
+- Authentication Path - The path on the host for starting the OAuth flow. e.g. `/oauth`.
+    - This should grant access to Tagboard, generating necessary tokens, then redirect back to Tagboard.
+    - Tagboard will attach query params: `state` and `redirectUri`, which is data about the Tagboard user & where the Partner should send users along with the following params:
+        - `access_token`
+        - `refresh_token` (optional)
+        - `state` - Just send the same `state` back to Tagboard for tracking which account is being authenticated.
+- API Path - The path on the host for fetching Experiences. e.g. `/api`.
+    - Example fully resolved path: https://example.com/api/experiences.
+    - Authenticated using `Authorization: Bearer <token>`.
+
+
 ## Experiences
 
 Experiences are frontend applications hosted by the Partner that will then be displayed within a Graphic in Tagboard using an IFrame. Tagboard will need access (via oauth) to fetch Experiences from the Partner's API, scoped to a particular user.
