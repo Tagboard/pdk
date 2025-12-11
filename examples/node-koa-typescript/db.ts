@@ -35,6 +35,7 @@ db.exec(`
     name TEXT,
     description TEXT,
     url TEXT,
+    qrCodeUrl TEXT,
     FOREIGN KEY(userId) REFERENCES users(id)
   )
 `);
@@ -115,8 +116,8 @@ const insertToken = db.prepare(`
 `);
 
 const insertExperience = db.prepare(`
-  INSERT INTO experiences (id, userId, name, description, url)
-  VALUES (?, ?, ?, ?, ?)
+  INSERT INTO experiences (id, userId, name, description, url, qrCodeUrl)
+  VALUES (?, ?, ?, ?, ?, ?)
 `);
 
 const insertExperienceTrigger = db.prepare(`
@@ -223,7 +224,7 @@ export const getUserByAccessToken = (token: string): User => {
 
 export const createExperience = (userId: string, experience: Experience): string => {
   const experienceId = generateId();
-  insertExperience.run(experienceId, userId, experience.name, experience.description, experience.url);
+  insertExperience.run(experienceId, userId, experience.name, experience.description, experience.url, experience.qrCodeUrl);
 
   experience.triggers?.forEach((trigger) => {
     insertExperienceTrigger.run(generateId(), experienceId, trigger.key, trigger.label);
@@ -249,6 +250,7 @@ const populateExperience = (obj: any): Experience => {
     name: obj.name,
     description: obj.description,
     url: obj.url,
+    qrCodeUrl: obj.qrCodeUrl,
   } as Experience;
 
   experience.triggers = findExperienceTriggers.all(experience.id).map((trigger) => ({

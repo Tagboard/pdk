@@ -1,5 +1,3 @@
-const API_BASE = 'http://localhost:8080';
-
 const query = new URLSearchParams(window.location.search);
 const redirectUri = query.get('redirectUri');
 const state = query.get('state');
@@ -39,7 +37,7 @@ loginSubmitButton.addEventListener('click', async () => {
   const username = document.querySelector('#loginForm > input[name="username"]').value;
   const password = document.querySelector('#loginForm > input[name="password"]').value;
 
-  const resp = await fetch(`${API_BASE}/login`, {
+  const resp = await fetch('/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -70,7 +68,7 @@ registerSubmitButton.addEventListener('click', async () => {
   const username = document.querySelector('#registerForm > input[name="username"]').value;
   const password = document.querySelector('#registerForm > input[name="password"]').value;
 
-  const resp = await fetch(`${API_BASE}/register`, {
+  const resp = await fetch('/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -98,7 +96,7 @@ registerSubmitButton.addEventListener('click', async () => {
 
 document.querySelectorAll('.oauth-connect-button').forEach((el) => {
   el.addEventListener('click', async () => {
-    const resp = await fetch(`${API_BASE}/oauth`, {
+    const resp = await fetch('/oauth', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
