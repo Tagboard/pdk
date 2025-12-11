@@ -74,6 +74,10 @@ interface Experience {
   // Description of the Experience.
   description: string
 
+  // Type of the Experience. Can be used for grouping like Experiences together,
+  // or pushing Tagboard users to use certain Experiences based on templates.
+  type: string;
+
   // URL used to render the Experience within an IFrame.
   // Should be a template string with editable values replaced with template blocks.
   // e.g. https://experience.tagboard.com/{{experience_id}}?player={{player_id}}
