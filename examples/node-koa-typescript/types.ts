@@ -81,6 +81,10 @@ interface Experience {
   // the Field.Value of any Field where Field.Key is "player_id".
   url: string
 
+  // QR Code URL. The destination end user's should be sent when scanning a code on the screen.
+  // This can be the same as the Experience URL, or a different destination altogether.
+  qrCodeUrl: string
+
   // Triggers that we will expose in Producer as buttons that
   // post messages to the Experience Iframe.
   triggers: Trigger[]

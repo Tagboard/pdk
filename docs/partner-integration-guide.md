@@ -80,7 +80,7 @@ Create an endpoint that receives OAuth requests from Tagboard. This endpoint sho
 // Example from node-koa-typescript
 router.get('/oauth', (ctx) => {
   const { state, redirectUri } = ctx.query;
-  
+
   // Store state and redirectUri for the callback
   // Present login/authorization UI to user
   // (see static/oauth/index.html in the example)
@@ -118,20 +118,20 @@ After successful authentication:
 router.post('/oauth', validateUser, (ctx) => {
   const { clientId, clientSecret } = ctx.request.body;
   const user = ctx.state.user;
-  
+
   // Validate client credentials
   if (!isValidClient(clientId, clientSecret)) {
     ctx.status = 403;
     return;
   }
-  
+
   // Create tokens
   const accessToken = generateSecureToken();
   const refreshToken = generateSecureToken();
-  
+
   // Store tokens associated with user
   saveToken(user.id, accessToken, refreshToken, clientId);
-  
+
   ctx.body = {
     accessToken: btoa(accessToken),
     refreshToken: btoa(refreshToken),
@@ -182,6 +182,7 @@ Your API must implement these endpoints, authenticated with the Bearer token:
       "name": "Player Stats Dashboard",
       "description": "Real-time player statistics and performance metrics",
       "url": "https://your-domain.com/experience?id={{experience_id}}&player={{player_id}}&theme={{theme}}",
+      "qrCodeUrl": "https://your-domain.com/experience?id={{experience_id}}&player={{player_id}}&theme={{theme}}",
       "triggers": [
         {
           "id": "3c604c46-fb5f-4323-8e17-f66c8b65d459",
@@ -255,23 +256,23 @@ export const validateToken = async (ctx, next) => {
   // Extract token from Authorization header
   const authHeader = ctx.headers['authorization'];
   const token = authHeader?.match(/Bearer (.*)/)?.[1];
-  
+
   if (!token) {
     ctx.status = 401;
     return;
   }
-  
+
   // Decode if base64 encoded
   const accessToken = atob(token);
-  
+
   // Lookup user by access token
   const user = getUserByAccessToken(accessToken);
-  
+
   if (!user) {
     ctx.status = 401;
     return;
   }
-  
+
   // Attach user to context for downstream handlers
   ctx.state.user = user;
   await next();
@@ -286,6 +287,7 @@ interface Experience {
   name: string;            // Display name
   description: string;     // Brief description
   url: string;             // Template URL with {{placeholders}}
+  qrCodeUrl: string;       // URL to send end user's to via a QR code
   triggers: Trigger[];     // Available triggers
   fields: Field[];         // Configurable fields
 }
@@ -318,10 +320,10 @@ interface FieldOption {
 // GET /api/experiences
 router.get('/api/experiences', validateToken, (ctx) => {
   const user = ctx.state.user;
-  
+
   // Fetch experiences for this user from database
   const experiences = getExperiences(user.id);
-  
+
   ctx.body = { experiences };
   ctx.status = 200;
 });
@@ -330,15 +332,15 @@ router.get('/api/experiences', validateToken, (ctx) => {
 router.get('/api/experiences/:id', validateToken, (ctx) => {
   const user = ctx.state.user;
   const { id } = ctx.params;
-  
+
   // Fetch specific experience
   const experience = getExperience(user.id, id);
-  
+
   if (!experience) {
     ctx.status = 404;
     return;
   }
-  
+
   ctx.body = experience;
   ctx.status = 200;
 });
@@ -408,23 +410,23 @@ window.addEventListener('message', (event) => {
   if (!event.origin.includes('tagboard.com')) {
     return;
   }
-  
+
   // Handle trigger
   const triggerKey = event.data;
-  
+
   switch (triggerKey) {
     case 'play':
       startAnimation();
       break;
-      
+
     case 'pause':
       pauseAnimation();
       break;
-      
+
     case 'reset':
       resetExperience();
       break;
-      
+
     default:
       console.log('Unknown trigger:', triggerKey);
   }
@@ -449,7 +451,7 @@ window.addEventListener('message', (event) => {
 <body>
   <h1 id="title">Experience</h1>
   <div id="content"></div>
-  
+
   <script>
     // Parse configuration from URL
     const params = new URLSearchParams(window.location.search);
@@ -458,7 +460,7 @@ window.addEventListener('message', (event) => {
       playerId: params.get('player_id'),
       theme: params.get('theme') || 'dark'
     };
-    
+
     // Apply theme
     if (config.theme === 'dark') {
       document.body.style.background = '#000';
@@ -467,17 +469,17 @@ window.addEventListener('message', (event) => {
       document.body.style.background = '#fff';
       document.body.style.color = '#000';
     }
-    
+
     // Display content
     document.getElementById('title').textContent = `Experience: ${config.experienceId}`;
     document.getElementById('content').textContent = `Player: ${config.playerId}`;
-    
+
     // Listen for triggers
     window.addEventListener('message', (event) => {
       if (!event.origin.includes('tagboard.com')) return;
-      
+
       console.log('Received trigger:', event.data);
-      
+
       // Handle triggers
       switch (event.data) {
         case 'play':
