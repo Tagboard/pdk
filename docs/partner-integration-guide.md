@@ -181,6 +181,7 @@ Your API must implement these endpoints, authenticated with the Bearer token:
       "id": "c76b1b51-3946-4ea4-a64a-ed60dfc2fd94",
       "name": "Player Stats Dashboard",
       "description": "Real-time player statistics and performance metrics",
+      "type": "dashboard",
       "url": "https://your-domain.com/experience?id={{experience_id}}&player={{player_id}}&theme={{theme}}",
       "qrCodeUrl": "https://your-domain.com/experience?id={{experience_id}}&player={{player_id}}&theme={{theme}}",
       "triggers": [
@@ -286,6 +287,7 @@ interface Experience {
   id: string;              // Unique identifier
   name: string;            // Display name
   description: string;     // Brief description
+  type: string;            // Type of Experience. Used to group like Experiences.
   url: string;             // Template URL with {{placeholders}}
   qrCodeUrl: string;       // URL to send end user's to via a QR code
   triggers: Trigger[];     // Available triggers
