@@ -24,6 +24,7 @@ db.exec(`
     refreshToken TEXT,
     clientId TEXT,
     userId TEXT,
+    expiresAt INTEGER,
     FOREIGN KEY(userId) REFERENCES users(id)
   )
 `);
@@ -99,11 +100,24 @@ const findUserByUsernameAndPassword = db.prepare(`
 `);
 
 const findUserByAccessToken = db.prepare(`
-  SELECT user.*
+  SELECT user.*, token.expiresAt
   FROM users user
   JOIN tokens token
     ON user.id = token.userId
   WHERE token.accessToken = ?
+`);
+
+const findTokenByRefreshToken = db.prepare(`
+  SELECT *
+  FROM tokens
+  WHERE refreshToken = ?
+`);
+
+const updateTokenByRefreshToken = db.prepare(`
+  UPDATE tokens
+  SET accessToken = ?,
+      expiresAt = ?
+  WHERE refreshToken = ?
 `);
 
 const insertUser = db.prepare(`
@@ -112,8 +126,8 @@ const insertUser = db.prepare(`
 `);
 
 const insertToken = db.prepare(`
-  INSERT INTO tokens (accessToken, refreshToken, clientId, userId)
-  VALUES (?, ?, ?, ?)
+  INSERT INTO tokens (accessToken, refreshToken, clientId, userId, expiresAt)
+  VALUES (?, ?, ?, ?, ?)
 `);
 
 const insertExperience = db.prepare(`
@@ -197,8 +211,33 @@ export const createUser = (username: string, password: string): User => {
 export const createToken = (userId: string, clientId: string): Array<string> => {
   const accessToken = crypto.randomUUID();
   const refreshToken = crypto.randomUUID();
-  insertToken.run(accessToken, refreshToken, clientId, userId);
+
+  // Set token to expire in 1 hour (3600 seconds)
+  const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+
+  insertToken.run(accessToken, refreshToken, clientId, userId, expiresAt);
   return [accessToken, refreshToken];
+};
+
+export const refreshToken = (refreshTokenValue: string): { accessToken: string; expiresIn: number } => {
+  const token = findTokenByRefreshToken.get(refreshTokenValue);
+
+  if (!token) {
+    throw new Error('Invalid refresh token');
+  }
+
+  const newAccessToken = crypto.randomUUID();
+
+  // Set new token to expire in 1 hour (3600 seconds)
+  const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+  const expiresIn = 3600;
+
+  updateTokenByRefreshToken.run(newAccessToken, expiresAt, refreshTokenValue);
+
+  return {
+    accessToken: newAccessToken,
+    expiresIn,
+  };
 };
 
 export const getUser = (username: string, password: string): User => {
@@ -211,15 +250,21 @@ export const getUser = (username: string, password: string): User => {
 };
 
 export const getUserByAccessToken = (token: string): User => {
-  const user = findUserByAccessToken.get(token);
+  const result = findUserByAccessToken.get(token);
 
-  if (!user) {
+  if (!result) {
+    return null;
+  }
+
+  // Check if token is expired
+  const now = Math.floor(Date.now() / 1000);
+  if (result.expiresAt && Number(result.expiresAt) < now) {
     return null;
   }
 
   return {
-    id: user.id,
-    username: user.username,
+    id: result.id,
+    username: result.username,
   } as User;
 };
 
@@ -233,7 +278,7 @@ export const createExperience = (userId: string, experience: Experience): string
 
   experience.fields?.forEach((field) => {
     const fieldId = generateId();
-    insertExperienceField.run(fieldId, experienceId, field.key, field.label, field.defaultValue, field.isText);
+    insertExperienceField.run(fieldId, experienceId, field.key, field.label, field.defaultValue, field.isText ? 1 : 0);
 
     field.options?.forEach((option) => {
       insertExperienceFieldOption.run(generateId(), experienceId, fieldId, option.value, option.label);

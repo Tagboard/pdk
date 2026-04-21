@@ -4,6 +4,17 @@ import app from './app.ts';
 
 const PORT = process.env.PORT || 8080;
 
+/**
+ * Partner Development Kit (PDK) Configuration
+ *
+ * When configuring this partner integration in Tagboard Admin, use:
+ * - Base URL: http://localhost:8080 (or your production URL)
+ * - OAuth Path: /oauth
+ * - API Path: /api
+ * - Refresh Path: /refresh
+ * - Default Token Expiration: 3600 (seconds)
+ */
+
 const start = async () => {
   let server = null;
 

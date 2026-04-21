@@ -54,6 +54,10 @@ This example application demonstrates a complete Partner API implementation usin
 1. **Base URL** - The host of your API (e.g., `https://api.partner.com`)
 2. **Authentication Path** - OAuth flow entry point (e.g., `/oauth`)
 3. **API Path** - Base path for Experience endpoints (e.g., `/api`)
+4. **Refresh Path** (optional) - Token refresh endpoint (e.g., `/refresh`)
+5. **Default Token Expiration** (optional) - Default token lifespan in seconds (e.g., `3600`)
+
+**Note:** If you provide a `refreshPath`, Tagboard will automatically refresh expired access tokens using the refresh token. If you provide an `expires` query parameter when redirecting back from OAuth (see below), that will take precedence over `defaultTokenExpiration`.
 
 ## Building OAuth Authentication
 
@@ -104,12 +108,19 @@ After successful authentication:
 
 1. Generate an `access_token` for API authentication
 2. Optionally generate a `refresh_token` for token renewal
-3. Redirect to `redirectUri` with tokens and state
+3. Optionally calculate token expiration time in seconds
+4. Redirect to `redirectUri` with tokens and state
 
 **Redirect URL format:**
 ```
-{redirectUri}?access_token={token}&refresh_token={token}&state={state}
+{redirectUri}?access_token={token}&refresh_token={token}&expires={seconds}&state={state}
 ```
+
+**Query Parameters:**
+- `access_token` (required) - The access token for API authentication
+- `refresh_token` (optional) - Token for refreshing the access token when it expires
+- `expires` (optional) - Token expiration time in seconds (e.g., `3600` for 1 hour)
+- `state` (required) - The state parameter received in the OAuth request, returned unchanged
 
 **Example implementation:**
 
@@ -160,6 +171,29 @@ CREATE TABLE tokens (
   FOREIGN KEY(userId) REFERENCES users(id)
 );
 ```
+
+### Step 5: Token Refresh Endpoint (Optional)
+
+If your tokens expire, implement a refresh endpoint to allow Tagboard to obtain new access tokens:
+
+**Endpoint:** `POST {refreshPath}`
+
+**Request body:**
+```json
+{
+  "refresh_token": "your-refresh-token"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "new-access-token",
+  "expires": 3600
+}
+```
+
+**Note:** The `expires` field is optional. If not provided, Tagboard will use the `defaultTokenExpiration` configured for your partner integration.
 
 ## Building the Experiences API
 

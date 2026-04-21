@@ -11,6 +11,7 @@ import {
   createExperience,
   getExperiences,
   getExperience,
+  refreshToken,
 } from './db.ts';
 
 const router = new Router();
@@ -104,6 +105,7 @@ router.post('/oauth', validateJwt, (ctx: Koa.Context) => {
   ctx.body = {
     accessToken: btoa(accessToken),
     refreshToken: btoa(refreshToken),
+    expiresIn: 3600, // 1 hour in seconds
   }
 });
 
@@ -177,6 +179,35 @@ router.get('/api/experiences/:id', validateToken, (ctx: Koa.Context) => {
   }
 
   ctx.body = experience;
+});
+
+/**************************************/
+/* Token Refresh Endpoint (PDK)      */
+/**************************************/
+
+// Refresh an expired access token using a refresh token.
+// This endpoint will be used by Tagboard via the provided refreshPath URL.
+router.post('/refresh', (ctx: Koa.Context) => {
+  const { refresh_token: refreshTokenValue } = ctx.request.body;
+
+  if (!refreshTokenValue) {
+    ctx.status = 400;
+    ctx.body = { error: 'refresh_token is required' };
+    return;
+  }
+
+  try {
+    const { accessToken, expiresIn } = refreshToken(refreshTokenValue);
+
+    ctx.body = {
+      access_token: accessToken,
+      expires: expiresIn,
+    };
+    ctx.status = 200;
+  } catch (err) {
+    ctx.status = 401;
+    ctx.body = { error: err?.message || 'Invalid refresh token' };
+  }
 });
 
 export default router;
