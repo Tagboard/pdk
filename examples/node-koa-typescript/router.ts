@@ -197,10 +197,10 @@ router.post('/refresh', (ctx: Koa.Context) => {
   }
 
   try {
-    const { accessToken, expiresIn } = refreshToken(refreshTokenValue);
+    const { accessToken, expiresIn } = refreshToken(atob(refreshTokenValue));
 
     ctx.body = {
-      access_token: accessToken,
+      access_token: btoa(accessToken),
       expires: expiresIn,
     };
     ctx.status = 200;
