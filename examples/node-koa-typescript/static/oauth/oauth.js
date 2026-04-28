@@ -113,11 +113,12 @@ document.querySelectorAll('.oauth-connect-button').forEach((el) => {
       return;
     }
 
-    const { accessToken, refreshToken } = await resp.json();
+    const { accessToken, refreshToken, expiresIn } = await resp.json();
 
     const querystring = new URLSearchParams({
       access_token: accessToken,
       refresh_token: refreshToken,
+      expires: expiresIn.toString(), // Token expiration time in seconds
       state, // Support for a little extra verification, but the Tagboard API should know who we are
     }).toString();
 
