@@ -29,7 +29,7 @@ router.stack.forEach((route) => {
   if (route.methods?.length) {
     routeMap.push({
       method: route.methods.filter((m) => m !== 'HEAD').join('|'),
-      path: route.path,
+      path: String(route.path),
     });
   }
 });
